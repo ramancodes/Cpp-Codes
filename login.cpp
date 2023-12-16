@@ -4,25 +4,8 @@
 #include <sstream>
 #include <map>
 #include <iomanip>
-#include <openssl/sha.h>
 
 using namespace std;
-
-// Function to hash the password using SHA-256
-string hashPassword(const string& password) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, password.c_str(), password.length());
-    SHA256_Final(hash, &sha256);
-
-    stringstream ss;
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        ss << hex << setw(2) << setfill('0') << static_cast<int>(hash[i]);
-    }
-
-    return ss.str();
-}
 
 bool registerUser(const string& username, const string& password) {
     // Read existing user credentials from file
@@ -50,11 +33,8 @@ bool registerUser(const string& username, const string& password) {
         return false;
     }
 
-    // Hash the password before storing it
-    string hashedPassword = hashPassword(password);
-
     // Register the new user
-    users[username] = hashedPassword;
+    users[username] = password;
 
     // Write the updated user credentials to the file
     ofstream outFile("users.txt");
@@ -93,7 +73,7 @@ bool authenticateUser(const string& username, const string& password) {
 
     // Check if the provided username exists and the password matches
     auto it = users.find(username);
-    if (it != users.end() && it->second == hashPassword(password)) {
+    if (it != users.end() && it->second == password) {
         cout << "Authentication successful!" << endl;
         return true;
     } else {
