@@ -4,10 +4,10 @@
 #include <sstream>
 #include <map>
 #include <iomanip>
+#include <vector>
 #include <conio.h>
 
 using namespace std;
-
 
 // registration class
 class Registration
@@ -98,7 +98,7 @@ private:
     void user_registration_input(int reg_type)
     {
         bool flag;
-        cout << "\t\t\t\t\tEnter username: ";
+        cout << "\n\t\t\t\t\tEnter username: ";
         cin >> user;
 
         cout << "\t\t\t\t\tEnter password: ";
@@ -196,7 +196,6 @@ public:
         }
     }
 };
-
 
 // class admin functions
 class Admin
@@ -382,11 +381,16 @@ public:
                  << "\t\t\t\t\t----------------------------------" << endl
                  << endl
                  << endl
-                 << "\t\t\t\t\t1. Add Employer" << endl
-                 << "\t\t\t\t\t2. Remove Employer" << endl
-                 << "\t\t\t\t\t3. Remove Job Seeker" << endl
-                 << "\t\t\t\t\t4. Change Employer Password" << endl
-                 << "\t\t\t\t\t5. Change Job Seeker Password" << endl
+                 << "\t\t\t\t\t1. Add Job Seeker" << endl
+                 << "\t\t\t\t\t2. Add Employer" << endl
+                 << "\t\t\t\t\t3. Add Admin" << endl
+                 << "\t\t\t\t\t4. Remove Job Seeker" << endl
+                 << "\t\t\t\t\t5. Remove Employer" << endl
+                 << "\t\t\t\t\t6. Remove Admin" << endl
+                 << "\t\t\t\t\t7. Change Job Seeker Password" << endl
+                 << "\t\t\t\t\t8. Change Employer Password" << endl
+                 << "\t\t\t\t\t9. Change Admin Password" << endl
+                 << "\t\t\t\t\t10. Remove Job Post" << endl
                  << "\t\t\t\t\t0. Log Out" << endl
                  << endl
                  << "\t\t\t\t\tEnter: ";
@@ -399,21 +403,14 @@ public:
                 break;
 
             case 2:
-                cout << "\n\t\t\t\t\tEnter username: ";
-                cin >> user;
-                if (remove_user(user, 2))
-                {
-                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
-                    getch();
-                }
-                else
-                {
-                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
-                    getch();
-                }
+                add_user(2);
                 break;
 
             case 3:
+                add_user(3);
+                break;
+
+            case 4:
                 cout << "\n\t\t\t\t\tEnter username: ";
                 cin >> user;
                 if (remove_user(user, 1))
@@ -428,7 +425,52 @@ public:
                 }
                 break;
 
-            case 4:
+            case 5:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (remove_user(user, 2))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 6:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (remove_user(user, 3))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 7:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (edit_password(user, 1))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 8:
                 cout << "\n\t\t\t\t\tEnter username: ";
                 cin >> user;
                 if (edit_password(user, 2))
@@ -443,10 +485,10 @@ public:
                 }
                 break;
 
-            case 5:
+            case 9:
                 cout << "\n\t\t\t\t\tEnter username: ";
                 cin >> user;
-                if (edit_password(user, 1))
+                if (edit_password(user, 3))
                 {
                     cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
                     getch();
@@ -456,6 +498,12 @@ public:
                     cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
                     getch();
                 }
+                break;
+
+            case 10:
+                cout << "\n\n\t\t\t\t\tProcess Under Development ";
+                cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                getch();
                 break;
 
             default:
@@ -473,12 +521,393 @@ public:
     }
 };
 
+// Job Seeker Class
+class JobSeeker
+{
+private:
+    struct Resume
+    {
+        string name;
+        string contact;
+        string email;
+        string dob;
+        string qualification;
+        string skills;
+        string experience;
+    };
+
+    struct Application
+    {
+        string jobTitle;
+        string jobSeeker;
+        string employerName;
+    };
+
+    // Add resume of job seeker -> resume.txt
+    void addResume(const Resume &resume)
+    {
+        ofstream resumeFile("resumes.txt", ios::app);
+        if (resumeFile.is_open())
+        {
+            resumeFile << resume.name << "|" << resume.contact << "|" << resume.email << "|" << resume.dob << "|" << resume.qualification << "|" << resume.skills << "|" << resume.experience << endl;
+            cout << "\n\t\t\t\t\tResume saved successfully!" << endl;
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening resume file for writing." << endl;
+        }
+    }
+
+    // show the resume of current job seeker -> resume.txt
+    void showResume(const string &jobSeekerName)
+    {
+        ifstream resumeFile("resumes.txt");
+        if (resumeFile.is_open())
+        {
+            string line;
+            while (getline(resumeFile, line))
+            {
+                size_t pos = line.find("|");
+                string name = line.substr(0, pos);
+                if (name == jobSeekerName)
+                {
+                    cout << "\n\n\t\t\t\t\tResume for " << name << ": " << line.substr(pos + 1) << endl;
+                    return;
+                }
+            }
+            cout << "\n\n\t\t\t\t\tResume not found for " << jobSeekerName << "." << endl;
+        }
+        else
+        {
+            cerr << "\n\n\t\t\t\t\tError opening resume file for reading." << endl;
+            cout<<"\n\t\t\t\t\tNo Resume Available." << endl;
+        }
+    }
+
+    // update the resume of the job seeker -> resume.txt
+    void updateResume(const string &jobSeekerName, const Resume &newResume)
+    {
+        ifstream resumeFile("resumes.txt");
+        if (resumeFile.is_open())
+        {
+            vector<string> lines;
+            string line;
+            while (getline(resumeFile, line))
+            {
+                size_t pos = line.find("|");
+                string name = line.substr(0, pos);
+                if (name == jobSeekerName)
+                {
+                    lines.push_back(newResume.name + "|" + newResume.contact + "|" + newResume.email + "|" + newResume.dob + "|" + newResume.qualification + "|" + newResume.skills + "|" + newResume.experience);
+                }
+                else
+                {
+                    lines.push_back(line);
+                }
+            }
+
+            // Write the updated resumes back to the file
+            ofstream outFile("resumes.txt");
+            if (outFile.is_open())
+            {
+                for (const auto &updatedLine : lines)
+                {
+                    outFile << updatedLine << endl;
+                }
+                cout << "\n\t\t\t\t\tResume updated successfully!" << endl;
+            }
+            else
+            {
+                cerr << "\n\t\t\t\t\tError opening resume file for writing." << endl;
+            }
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening resume file for reading." << endl;
+        }
+    }
+
+    // Show all the jobs available in the application -> jobs.txt
+    bool showJobs()
+    {
+        ifstream jobFile("jobs.txt");
+        if (jobFile.is_open())
+        {
+            string line;
+            while (getline(jobFile, line))
+            {
+                size_t pos = line.find("|");
+                cout << "\n\n\t\t\t\t\tJob Title: " << line.substr(0, pos) << endl;
+                cout << "\n\t\t\t\t\tDescription: " << line.substr(pos + 1) << endl;
+                cout << "------------------------" << endl;
+            }
+            return true;
+        }
+
+        cerr << "\n\t\t\t\t\tError opening job file for reading." << endl;
+        cout << "\n\t\t\t\t\tNo Jobs Available" << endl;
+        return false;
+    }
+
+    // apply for any job -> applications.txt
+    void applyForJob(const Application &application)
+    {
+        ofstream applicationFile("applications.txt", ios::app);
+        if (applicationFile.is_open())
+        {
+            applicationFile << application.jobSeeker << "|" << application.jobTitle << "|" << application.employerName << endl;
+            cout << "\n\t\t\t\t\tApplication submitted successfully!" << endl;
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening application file for writing." << endl;
+        }
+    }
+
+    // show all the applied jobs -> applications.txt
+    void viewAppliedJobs(const string &jobSeekerName)
+    {
+        ifstream applicationFile("applications.txt");
+        if (applicationFile.is_open())
+        {
+            string line;
+            while (getline(applicationFile, line))
+            {
+                size_t pos = line.find("|");
+                string applicant = line.substr(0, pos);
+                string jobTitle = line.substr(pos + 1);
+                if (applicant == jobSeekerName)
+                {
+                    cout << "\n\t\t\t\t\tYou applied for the job: " << jobTitle << endl;
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tYou have not applied for any job.";
+                }
+            }
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening application file for reading." << endl;
+            cout << "\n\t\t\t\t\tNo Jobs Applied." << endl;
+        }
+    }
+
+public:
+    // Job seeker function call
+    void jobSeeker_func_call()
+    {
+        int choice;
+        char c;
+        string jobTitle, employerName, jobSeekerName;
+    RenterName:
+        system("CLS");
+        cout << endl
+             << endl
+             << "\t\t\t\t\t--------------------------------------" << endl
+             << "\t\t\t\t\t  ::Welcome to Job Seeker Section!::" << endl
+             << "\t\t\t\t\t--------------------------------------" << endl
+             << endl
+             << endl;
+        // Enter Name
+        cin.ignore();
+        cout << "\n\t\t\t\t\tEnter your name : ";
+        getline(cin, jobSeekerName);
+        cout << "\n\t\t\t\t\tYour name is " << jobSeekerName << endl
+             << "\t\t\t\t\tIs this Correct? (Y/y or N/n)" << endl
+             << "\n\t\t\t\t\tEnter: ";
+        cin >> c;
+
+        if (c == 'y' || c == 'Y')
+        {
+            do
+            {
+                system("CLS");
+                cout << endl
+                     << endl
+                     << "\t\t\t\t\t--------------------------------------" << endl
+                     << "\t\t\t\t\t  ::Welcome to Job Seeker Section!::" << endl
+                     << "\t\t\t\t\t--------------------------------------" << endl
+                     << endl
+                     << endl
+                     << "\t\t\t\t\t1. Add Resume\n"
+                     << "\t\t\t\t\t2. Show Resume\n"
+                     << "\t\t\t\t\t3. Update Resume\n"
+                     << "\t\t\t\t\t4. Search & Apply Available Jobs\n"
+                     << "\t\t\t\t\t5. View Applied Jobs\n"
+                     << "\t\t\t\t\t0. Exit\n"
+                     << "\n\t\t\t\t\tEnter your choice: ";
+                cin >> choice;
+
+                switch (choice)
+                {
+                // 1. Add Resume
+                case 1:
+                {
+                    Resume resume;
+                    cin.ignore(); // Ignore newline character left in the buffer
+                    resume.name = jobSeekerName;
+                    // Enter contact
+                    cout << "\n\n\t\t\t\t\tEnter Contact No: ";
+                    getline(cin, resume.contact);
+                    // Enter email
+                    cout << "\t\t\t\t\tEnter email: ";
+                    getline(cin, resume.email);
+                    // Enter dob
+                    cout << "\t\t\t\t\tEnter D.O.B.(DD/MM/YYYY): ";
+                    getline(cin, resume.dob);
+                    // Enter Qualification
+                    cout << "\t\t\t\t\tEnter Qualification: ";
+                    getline(cin, resume.qualification);
+                    // Enter skills
+                    cout << "\t\t\t\t\tEnter skills: ";
+                    getline(cin, resume.skills);
+                    // Enter Experience
+                    cout << "\t\t\t\t\tEnter experience (months or years): ";
+                    getline(cin, resume.experience);
+
+                    // addResume Function Initiated
+                    addResume(resume);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 2. Show Resume
+                case 2:
+                {
+                    showResume(jobSeekerName);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 3. Update Resume
+                case 3:
+                {
+                    Resume newResume;
+                    cin.ignore(); // Ignore newline character left in the buffer
+                    newResume.name = jobSeekerName;
+                    // Enter contact
+                    cout << "\n\t\t\t\t\tEnter Contact No: ";
+                    getline(cin, newResume.contact);
+                    // Enter email
+                    cout << "\t\t\t\t\tEnter email: ";
+                    getline(cin, newResume.email);
+                    // Enter dob
+                    cout << "\t\t\t\t\tEnter D.O.B.(DD/MM/YYYY): ";
+                    getline(cin, newResume.dob);
+                    // Enter Qualification
+                    cout << "\t\t\t\t\tEnter Qualification: ";
+                    getline(cin, newResume.qualification);
+                    // Enter skills
+                    cout << "\t\t\t\t\tEnter skills: ";
+                    getline(cin, newResume.skills);
+                    // Enter Experience
+                    cout << "\t\t\t\t\tEnter experience (months or years): ";
+                    getline(cin, newResume.experience);
+
+                    // Update resume function initiated
+                    updateResume(jobSeekerName, newResume);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 4. Search & Apply for Jobs Available
+                case 4:
+                {
+                    Application application;
+                    do
+                    {
+                        system("CLS");
+                        cout << endl
+                             << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << "\t\t\t\t\t     ::Available Jobs::" << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << endl
+                             << endl;
+                        // show jobs
+                        if (showJobs())
+                        {
+                            // apply for any job
+                            cout << "\n\n\t\t\t\t\tDo You Want to Apply For Any Of The Available Jobs? (Y/y or N/n)"
+                                 << "\n\n\t\t\t\t\tEnter: ";
+                            cin >> c;
+                            if (c == 'Y' || c == 'y')
+                            {
+                                cin.ignore();
+                                application.jobSeeker = jobSeekerName;
+                                cout << "\n\t\t\t\t\tEnter the Job Title you want to apply for: ";
+                                getline(cin, application.jobTitle);
+                                cout << "\n\n\t\t\t\t\tEnter the Employer Name: ";
+                                getline(cin, application.employerName);
+                                applyForJob(application);
+                            }
+                        }
+                        else
+                        {
+                            c = 'n';
+                        }
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+
+                    } while (c == 'Y' || c == 'y');
+
+                    break;
+                }
+
+                // 5. View Applied Jobs By the current Job Seeker
+                case 5:
+                {
+                    system("CLS");
+                    cout << endl
+                         << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << "\t\t\t\t\t     ::Applied Jobs::" << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << endl
+                         << endl;
+                    viewAppliedJobs(jobSeekerName);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Exit ";
+                    getch();
+                    break;
+                }
+                default:
+                {
+                    if (!choice == 0)
+                    {
+                        cout << "\n\t\t\t\t\tInvalid Input!! Please Try Again!!";
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                    }
+                    break;
+                }
+                }
+
+            } while (choice != 0);
+        }
+        else
+        {
+            cout << "\n\t\t\t\t\tDo you want to retry? (Y/y or N/n)" << endl
+                 << "\n\t\t\t\t\tEnter: ";
+            cin >> c;
+
+            if (c == 'y' || c == 'Y')
+            {
+                goto RenterName;
+            }
+        }
+    }
+};
 
 // login class
 class Login
 {
 private:
     Admin admin;
+    JobSeeker jobseeker;
     string user, pass;
     int choice;
 
@@ -611,17 +1040,14 @@ private:
         cout << endl
              << endl
              << "\t\t\t\t\t---------------------------------------" << endl
-             << "\t\t\t\t\t ::Login As A Job Seeker::" << endl
+             << "\t\t\t\t\t     ::Login As A Job Seeker::" << endl
              << "\t\t\t\t\t---------------------------------------" << endl
              << endl;
 
         // authenticate the job seeker
         if (user_login_input(reg_type))
         {
-            system("CLS");
-            cout << "\n\t\t\t\t\tContinue the Process" << endl;
-            cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
-            getch();
+            jobseeker.jobSeeker_func_call();
         }
     }
 
@@ -632,7 +1058,7 @@ private:
         cout << endl
              << endl
              << "\t\t\t\t\t---------------------------------------" << endl
-             << "\t\t\t\t\t\t::Login As An Employer::" << endl
+             << "\t\t\t\t\t      ::Login As An Employer::" << endl
              << "\t\t\t\t\t---------------------------------------" << endl
              << endl;
 
@@ -653,7 +1079,7 @@ private:
         cout << endl
              << endl
              << "\t\t\t\t\t---------------------------------------" << endl
-             << "\t\t\t\t\t\t::Login As An Admin::" << endl
+             << "\t\t\t\t\t       ::Login As An Admin::" << endl
              << "\t\t\t\t\t---------------------------------------" << endl
              << endl;
 
@@ -711,7 +1137,6 @@ public:
     }
 };
 
-
 // main function
 int main()
 {
@@ -727,11 +1152,6 @@ int main()
              << "\t\t\t\t\tWelcome To Job Application System" << endl
              << "\t\t\t\t\t----------------------------------" << endl
              << endl
-             << endl
-             << "\t\t\t\t\tDo you have an account? " << endl
-             << "\t\t\t\t\tIf yes enter '1' to login." << endl
-             << "\t\t\t\t\tIf no enter '2' to sign up." << endl
-             << "\t\t\t\t\tEnter '0' to exit " << endl
              << endl
              << "\t\t\t\t\t1. Login" << endl
              << "\t\t\t\t\t2. Register As a New User" << endl
