@@ -390,7 +390,6 @@ public:
                  << "\t\t\t\t\t7. Change Job Seeker Password" << endl
                  << "\t\t\t\t\t8. Change Employer Password" << endl
                  << "\t\t\t\t\t9. Change Admin Password" << endl
-                 << "\t\t\t\t\t10. Remove Job Post" << endl
                  << "\t\t\t\t\t0. Log Out" << endl
                  << endl
                  << "\t\t\t\t\tEnter: ";
@@ -500,12 +499,6 @@ public:
                 }
                 break;
 
-            case 10:
-                cout << "\n\n\t\t\t\t\tProcess Under Development ";
-                cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
-                getch();
-                break;
-
             default:
                 if (!choice == 0)
                 {
@@ -580,7 +573,7 @@ private:
         else
         {
             cerr << "\n\n\t\t\t\t\tError opening resume file for reading." << endl;
-            cout<<"\n\t\t\t\t\tNo Resume Available." << endl;
+            cout << "\n\t\t\t\t\tNo Resume Available." << endl;
         }
     }
 
@@ -655,7 +648,7 @@ private:
         ofstream applicationFile("applications.txt", ios::app);
         if (applicationFile.is_open())
         {
-            applicationFile << application.jobSeeker << "|" << application.jobTitle << "|" << application.employerName << endl;
+            applicationFile << application.jobSeeker << "->" << application.employerName << "|" << application.jobTitle << endl;
             cout << "\n\t\t\t\t\tApplication submitted successfully!" << endl;
         }
         else
@@ -665,7 +658,7 @@ private:
     }
 
     // show all the applied jobs -> applications.txt
-    void viewAppliedJobs(const string &jobSeekerName)
+    bool viewAppliedJobs(const string &jobSeekerName)
     {
         ifstream applicationFile("applications.txt");
         if (applicationFile.is_open())
@@ -673,23 +666,64 @@ private:
             string line;
             while (getline(applicationFile, line))
             {
-                size_t pos = line.find("|");
-                string applicant = line.substr(0, pos);
-                string jobTitle = line.substr(pos + 1);
+                size_t pos1 = line.find("->");
+                size_t pos2 = line.find("|");
+                string applicant = line.substr(0, pos1);
+                string jobTitle = line.substr(pos2 + 1);
+                string description = line.substr(0, pos2);
                 if (applicant == jobSeekerName)
                 {
                     cout << "\n\t\t\t\t\tYou applied for the job: " << jobTitle << endl;
+                    cout << "\t\t\t\t\t" << description << endl;
                 }
                 else
                 {
                     cout << "\n\t\t\t\t\tYou have not applied for any job.";
+                    return false;
                 }
+            }
+            return true;
+        }
+        cerr << "\n\t\t\t\t\tError opening application file for reading." << endl;
+        return false;
+    }
+
+    // Remove or take back any job application
+    void removeJob(const string &jobTitle)
+    {
+        ifstream applicationFile("applications.txt");
+        if (applicationFile.is_open())
+        {
+            vector<string> lines;
+            string line;
+            while (getline(applicationFile, line))
+            {
+                size_t pos = line.find("|");
+                string title = line.substr(pos + 1);
+                if (title != jobTitle)
+                {
+                    lines.push_back(line);
+                }
+            }
+
+            // Write the updated jobs back to the file
+            ofstream outFile("applications.txt");
+            if (outFile.is_open())
+            {
+                for (const auto &updatedLine : lines)
+                {
+                    outFile << updatedLine << endl;
+                }
+                cout << "\n\t\t\t\t\tJob removed successfully!" << endl;
+            }
+            else
+            {
+                cerr << "\n\t\t\t\t\tError opening job file for writing." << endl;
             }
         }
         else
         {
-            cerr << "\n\t\t\t\t\tError opening application file for reading." << endl;
-            cout << "\n\t\t\t\t\tNo Jobs Applied." << endl;
+            cerr << "\n\t\t\t\t\tError opening job file for reading." << endl;
         }
     }
 
@@ -720,6 +754,7 @@ public:
 
         if (c == 'y' || c == 'Y')
         {
+
             do
             {
                 system("CLS");
@@ -735,6 +770,7 @@ public:
                      << "\t\t\t\t\t3. Update Resume\n"
                      << "\t\t\t\t\t4. Search & Apply Available Jobs\n"
                      << "\t\t\t\t\t5. View Applied Jobs\n"
+                     << "\t\t\t\t\t6. Remove Applied Jobs\n"
                      << "\t\t\t\t\t0. Exit\n"
                      << "\n\t\t\t\t\tEnter your choice: ";
                 cin >> choice;
@@ -824,11 +860,10 @@ public:
                         cout << endl
                              << endl
                              << "\t\t\t\t\t-------------------------------" << endl
-                             << "\t\t\t\t\t     ::Available Jobs::" << endl
+                             << "\t\t\t\t\t    ::Available Jobs::" << endl
                              << "\t\t\t\t\t-------------------------------" << endl
                              << endl
                              << endl;
-                        // show jobs
                         if (showJobs())
                         {
                             // apply for any job
@@ -850,6 +885,7 @@ public:
                         {
                             c = 'n';
                         }
+
                         cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                         getch();
 
@@ -874,6 +910,41 @@ public:
                     getch();
                     break;
                 }
+
+                // 6. Remove Applied Jobs
+                case 6:
+                {
+                    do
+                    {
+                        system("CLS");
+                        cout << endl
+                             << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << "\t\t\t\t\t    ::Applied Jobs::" << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << endl
+                             << endl;
+
+                        if (viewAppliedJobs(jobSeekerName))
+                        {
+                            cin.ignore();
+                            cout << "\n\t\t\t\t\tEnter The Job Title You Want To Delete: ";
+                            getline(cin, jobTitle);
+                            removeJob(jobTitle);
+                            cout << "\n\n\t\t\t\t\tDo You Want More Applied Jobs Jobs? (Y/y or N/n)"
+                                 << "\n\n\t\t\t\t\tEnter: ";
+                            cin >> c;
+                        }
+                        else
+                        {
+                            c = 'n';
+                            cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                            getch();
+                        }
+                    } while (c == 'Y' || c == 'y');
+                    break;
+                }
+
                 default:
                 {
                     if (!choice == 0)
