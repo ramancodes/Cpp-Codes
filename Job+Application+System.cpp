@@ -8,6 +8,7 @@
 
 using namespace std;
 
+
 // registration class
 class Registration
 {
@@ -96,13 +97,16 @@ private:
     // take input (username & password) from the user
     void user_registration_input(int reg_type)
     {
+        bool flag;
         cout << "\t\t\t\t\tEnter username: ";
         cin >> user;
 
         cout << "\t\t\t\t\tEnter password: ";
         cin >> pass;
 
-        if (registerUser(user, pass, reg_type))
+        flag = registerUser(user, pass, reg_type);
+
+        if (flag)
         {
             char c;
             cout << "\n\t\t\t\t\tRegistration successful!" << endl
@@ -146,20 +150,13 @@ private:
         user_registration_input(reg_type);
     }
 
-    // register new admin
-    void admin_registration(int reg_type)
+public:
+    // admin add user function
+    void admin_add(int reg_type)
     {
-        system("CLS");
-        cout << endl
-             << endl
-             << "\t\t\t\t\t---------------------------------------" << endl
-             << "\t\t\t\t\t\t::Register As An Admin::" << endl
-             << "\t\t\t\t\t---------------------------------------" << endl
-             << endl;
         user_registration_input(reg_type);
     }
 
-public:
     // registration calling function
     void registration_call()
     {
@@ -172,7 +169,6 @@ public:
              << endl
              << "\t\t\t\t\t1. Job Seeker" << endl
              << "\t\t\t\t\t2. Employer" << endl
-             << "\t\t\t\t\t3. Admin" << endl
              << "\t\t\t\t\t0. Home Screen" << endl
              << endl
              << "\t\t\t\t\tEnter: ";
@@ -189,10 +185,6 @@ public:
             employer_registration(choice);
             break;
 
-        case 3:
-            admin_registration(choice);
-            break;
-
         default:
             if (!choice == 0)
             {
@@ -205,10 +197,288 @@ public:
     }
 };
 
+
+// class admin functions
+class Admin
+{
+private:
+    // Add new User By the Admin
+    void add_user(int user_type)
+    {
+        Registration Registration;
+        Registration.admin_add(user_type);
+    }
+
+    // edit the password of any user
+    bool edit_password(const string &username, const int &reg_type)
+    {
+        string filepath;
+        string newPassword;
+        switch (reg_type)
+        {
+        case 1:
+            filepath = "jobseekers_credentials.txt";
+            break;
+
+        case 2:
+            filepath = "employers_credentials.txt";
+            break;
+
+        case 3:
+            filepath = "admin_credentials.txt";
+            break;
+
+        default:
+            break;
+        }
+
+        // Read existing user credentials from file
+        ifstream userFile;
+        userFile.open(filepath);
+
+        if (userFile)
+        {
+            map<string, string> users;
+
+            // Populate map with username-password pairs from the file
+            string line;
+            while (getline(userFile, line))
+            {
+                istringstream iss(line);
+                string storedUsername, storedPassword;
+                if (iss >> storedUsername >> storedPassword)
+                {
+                    users[storedUsername] = storedPassword;
+                }
+            }
+
+            // Check if the username exists
+            auto it = users.find(username);
+            if (it != users.end())
+            {
+                // Enter the new password from the user
+                cout << "\n\t\t\t\t\tEnter the new password: ";
+                cin >> newPassword;
+
+                // Update the user's password
+                it->second = newPassword;
+
+                // Write the updated user credentials to the file
+                ofstream outFile(filepath);
+                if (!outFile.is_open())
+                {
+                    cerr << "\n\t\t\t\t\tError opening user file for writing." << endl;
+                    return false;
+                }
+
+                for (const auto &entry : users)
+                {
+                    outFile << entry.first << " " << entry.second << endl;
+                }
+
+                cout << "\n\t\t\t\t\tPassword for user " << username << " has been changed successfully." << endl;
+                return true;
+            }
+            else
+            {
+                cout << "\n\t\t\t\t\tUser not found. Password modification failed." << endl;
+                return false;
+            }
+        }
+
+        cerr << "\n\t\t\t\t\tError opening user file." << endl;
+        return false;
+    }
+
+    // remove a user from the file
+    bool remove_user(const string &username, const int &reg_type)
+    {
+        string filepath;
+        switch (reg_type)
+        {
+        case 1:
+            filepath = "jobseekers_credentials.txt";
+            break;
+
+        case 2:
+            filepath = "employers_credentials.txt";
+            break;
+
+        case 3:
+            filepath = "admin_credentials.txt";
+            break;
+
+        default:
+            break;
+        }
+
+        // Read existing user credentials from file
+        ifstream userFile;
+        userFile.open(filepath);
+        if (userFile)
+        {
+
+            map<string, string> users;
+
+            // Populate map with username-password pairs from the file
+            string line;
+            while (getline(userFile, line))
+            {
+                istringstream iss(line);
+                string storedUsername, storedPassword;
+                if (iss >> storedUsername >> storedPassword)
+                {
+                    users[storedUsername] = storedPassword;
+                }
+            }
+
+            // Check if the username exists
+            auto it = users.find(username);
+            if (it != users.end())
+            {
+                // Remove the user from the map
+                users.erase(it);
+
+                // Write the updated user credentials to the file
+                ofstream outFile(filepath);
+                if (!outFile.is_open())
+                {
+                    cerr << "\n\t\t\t\t\tError opening user file for writing." << endl;
+                    return false;
+                }
+
+                for (const auto &entry : users)
+                {
+                    outFile << entry.first << " " << entry.second << endl;
+                }
+
+                cout << "\n\t\t\t\t\tUser " << username << " has been deleted successfully." << endl;
+                return true;
+            }
+            else
+            {
+                cout << "\n\t\t\t\t\tUser not found. Deletion failed." << endl;
+                return false;
+            }
+        }
+
+        cerr << "\n\t\t\t\t\tError opening user file." << endl;
+        return false;
+    }
+
+public:
+    // Call the functions of the admin
+    void admin_func_call()
+    {
+        string user;
+        int choice;
+        do
+        {
+            system("CLS");
+            cout << endl
+                 << endl
+                 << "\t\t\t\t\t----------------------------------" << endl
+                 << "\t\t\t\t\t\t ::Admin Section::" << endl
+                 << "\t\t\t\t\t----------------------------------" << endl
+                 << endl
+                 << endl
+                 << "\t\t\t\t\t1. Add Employer" << endl
+                 << "\t\t\t\t\t2. Remove Employer" << endl
+                 << "\t\t\t\t\t3. Remove Job Seeker" << endl
+                 << "\t\t\t\t\t4. Change Employer Password" << endl
+                 << "\t\t\t\t\t5. Change Job Seeker Password" << endl
+                 << "\t\t\t\t\t0. Log Out" << endl
+                 << endl
+                 << "\t\t\t\t\tEnter: ";
+            cin >> choice;
+
+            switch (choice)
+            {
+            case 1:
+                add_user(2);
+                break;
+
+            case 2:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (remove_user(user, 2))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 3:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (remove_user(user, 1))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 4:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (edit_password(user, 2))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            case 5:
+                cout << "\n\t\t\t\t\tEnter username: ";
+                cin >> user;
+                if (edit_password(user, 1))
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+                break;
+
+            default:
+                if (!choice == 0)
+                {
+                    cout << "\n\t\t\t\t\tInvalid Input!! Please Try Again!!";
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                }
+
+                break;
+            }
+
+        } while (choice != 0);
+    }
+};
+
+
 // login class
 class Login
 {
 private:
+    Admin admin;
     string user, pass;
     int choice;
 
@@ -390,10 +660,7 @@ private:
         // authenticate the job seeker
         if (user_login_input(reg_type))
         {
-            system("CLS");
-            cout << "\n\t\t\t\t\tContinue the Process" << endl;
-            cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
-            getch();
+            admin.admin_func_call();
         }
     }
 
@@ -443,6 +710,7 @@ public:
         }
     }
 };
+
 
 // main function
 int main()
