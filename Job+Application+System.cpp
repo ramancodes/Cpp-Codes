@@ -973,12 +973,459 @@ public:
     }
 };
 
+// Employer Class
+class Employer
+{
+private:
+    struct EmployerProfile
+    {
+        string CompanyName;
+        string contact;
+        string email;
+        string location;
+    };
+
+    struct Job
+    {
+        string title;
+        string description;
+        string requirements;
+        string employerName;
+    };
+
+    struct Application
+    {
+        string jobTitle;
+        string jobSeeker;
+        string employerName;
+    };
+
+    // Add resume of job seeker -> employers.txt
+    void saveEmployerProfile(const EmployerProfile &employerProfile)
+    {
+        ofstream employerFile("employers.txt", ios::app);
+        if (employerFile.is_open())
+        {
+            employerFile << employerProfile.CompanyName << "|" << employerProfile.contact << "|" << employerProfile.email << "|" << employerProfile.location << endl;
+            cout << "\n\t\t\t\t\tEmployer profile saved successfully!" << endl;
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening resume file for writing." << endl;
+        }
+    }
+
+    // show the profile of current employer -> employers.txt
+    void showEmployerProfile(const string &employerName)
+    {
+        ifstream employerFile("employers.txt");
+        if (employerFile.is_open())
+        {
+            string line;
+            while (getline(employerFile, line))
+            {
+                size_t pos = line.find("|");
+                string name = line.substr(0, pos);
+                if (name == employerName)
+                {
+                    cout << "\n\n\t\t\t\t\tEmployer Profile of " << name << ": " << line.substr(pos + 1) << endl;
+                    return;
+                }
+            }
+            cout << "\n\n\t\t\t\t\tEmployer profile not found for " << employerName << "." << endl;
+        }
+        else
+        {
+            cerr << "\n\n\t\t\t\t\tError opening resume file for reading." << endl;
+        }
+    }
+
+    // update the profile of the employer -> employers.txt
+    void updateEmployerProfile(const string &employerName, const EmployerProfile &newEmployerProfile)
+    {
+        ifstream employerFile("employers.txt");
+        if (employerFile.is_open())
+        {
+            vector<string> lines;
+            string line;
+            while (getline(employerFile, line))
+            {
+                size_t pos = line.find("|");
+                string name = line.substr(0, pos);
+                if (name == employerName)
+                {
+                    lines.push_back(newEmployerProfile.CompanyName + "|" + newEmployerProfile.contact + "|" + newEmployerProfile.email + "|" + newEmployerProfile.location);
+                }
+                else
+                {
+                    lines.push_back(line);
+                }
+            }
+
+            // Write the updated profiles back to the file
+            ofstream outFile("employers.txt");
+            if (outFile.is_open())
+            {
+                for (const auto &updatedLine : lines)
+                {
+                    outFile << updatedLine << endl;
+                }
+                cout << "\n\t\t\t\t\tEmployer profile updated successfully!" << endl;
+            }
+            else
+            {
+                cerr << "\n\t\t\t\t\tError opening resume file for writing." << endl;
+            }
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening resume file for reading." << endl;
+        }
+    }
+
+    // Show all the jobs available in the application -> jobs.txt
+    bool showJobs(const string &employerName)
+    {
+        ifstream jobFile("jobs.txt");
+        if (jobFile.is_open())
+        {
+            string line;
+            while (getline(jobFile, line))
+            {
+                size_t pos1 = line.find("-");
+                size_t pos2 = line.find("|");
+                string companyName = line.substr(0, pos1);
+                string jobDetails = line.substr(pos1 + 1);
+                if (companyName == employerName)
+                {
+                    cout << "\n\n\t\t\t\t\tJob Title: " << jobDetails.substr(0, pos2) << endl;
+                    cout << "\n\t\t\t\t\tDescription: " << jobDetails.substr(pos2 + 1) << endl;
+                }
+                else
+                {
+                    cout << "\n\t\t\t\t\tNo job has been posted by " << employerName << endl;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        cerr << "\n\t\t\t\t\tError opening job file for reading." << endl;
+        cout << "\n\t\t\t\t\tNo Jobs Available" << endl;
+        return false;
+    }
+
+    // add new job -> jobs.txt
+    void addNewJob(const Job &job)
+    {
+        ofstream jobFile("jobs.txt", ios::app);
+        if (jobFile.is_open())
+        {
+            jobFile << job.employerName << "->" << job.title << "|" << job.description << "|" << job.requirements << endl;
+            cout << "\n\n\t\t\t\t\tJob saved successfully!" << endl;
+        }
+        else
+        {
+            cerr << "\n\n\t\t\t\t\tError opening job file for writing." << endl;
+        }
+    }
+
+    // show all the applied jobs -> applications.txt
+    void viewAppliedJobs()
+    {
+        ifstream applicationFile("applications.txt");
+        if (applicationFile.is_open())
+        {
+            string line;
+            while (getline(applicationFile, line))
+            {
+                if (line.empty())
+                {
+                    cout << "\n\t\t\t\t\tNo applicant has applied for any job.";
+                    break;
+                }
+                size_t pos1 = line.find("->");
+                size_t pos2 = line.find("|");
+                string applicant = line.substr(0, pos1);
+                string jobTitle = line.substr(pos2 + 1);
+                string description = line.substr(0, pos2);
+                string employerName = description.substr(pos1 + 1);
+
+                cout << "\n\t\t\t\t\tApplicant : " << applicant << ", applied for the job: " << jobTitle << endl;
+            }
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening application file for reading." << endl;
+        }
+    }
+
+    // Remove a job -> jobs.txt
+    void removeJob(const string &jobTitle)
+    {
+        ifstream applicationFile("jobs.txt");
+        if (applicationFile.is_open())
+        {
+            vector<string> lines;
+            string line;
+            while (getline(applicationFile, line))
+            {
+                size_t pos = line.find("|");
+                string title = line.substr(pos + 1);
+                if (title != jobTitle)
+                {
+                    lines.push_back(line);
+                }
+            }
+
+            // Write the updated jobs back to the file
+            ofstream outFile("jobs.txt");
+            if (outFile.is_open())
+            {
+                for (const auto &updatedLine : lines)
+                {
+                    outFile << updatedLine << endl;
+                }
+                cout << "\n\t\t\t\t\tJob removed successfully!" << endl;
+            }
+            else
+            {
+                cerr << "\n\t\t\t\t\tError opening job file for writing." << endl;
+            }
+        }
+        else
+        {
+            cerr << "\n\t\t\t\t\tError opening job file for reading." << endl;
+        }
+    }
+
+public:
+    // Employer function call
+    void employer_func_call()
+    {
+        int choice;
+        char c;
+        string jobTitle, employerName;
+    RenterName:
+        system("CLS");
+        cout << endl
+             << endl
+             << "\t\t\t\t\t--------------------------------------" << endl
+             << "\t\t\t\t\t  ::Welcome to Employer Section!::" << endl
+             << "\t\t\t\t\t--------------------------------------" << endl
+             << endl
+             << endl;
+        // Enter Name
+        cin.ignore();
+        cout << "\n\t\t\t\t\tEnter your name as an employer : ";
+        getline(cin, employerName);
+        cout << "\n\t\t\t\t\tYour name is " << employerName << endl
+             << "\t\t\t\t\tIs this Correct? (Y/y or N/n)" << endl
+             << "\n\t\t\t\t\tEnter: ";
+        cin >> c;
+
+        if (c == 'y' || c == 'Y')
+        {
+            do
+            {
+                system("CLS");
+                cout << endl
+                     << endl
+                     << "\t\t\t\t\t--------------------------------------" << endl
+                     << "\t\t\t\t\t  ::Welcome to Employer Section!::" << endl
+                     << "\t\t\t\t\t--------------------------------------" << endl
+                     << endl
+                     << endl
+                     << "\t\t\t\t\t1. Add Employer Profile\n"
+                     << "\t\t\t\t\t2. Update Employer Profile\n"
+                     << "\t\t\t\t\t3. Show Employer Profile\n"
+                     << "\t\t\t\t\t4. Add New Job\n"
+                     << "\t\t\t\t\t5. Show All Jobs and Vacancies\n"
+                     << "\t\t\t\t\t6. View Jobs Applied by Job Seekers\n"
+                     << "\t\t\t\t\t7. Remove Jobs\n"
+                     << "\t\t\t\t\t0. Exit\n"
+                     << "\n\t\t\t\t\tEnter your choice: ";
+                cin >> choice;
+
+                switch (choice)
+                {
+                // 1. Add Employer Profile
+                case 1:
+                {
+                    EmployerProfile employerProfile;
+                    cin.ignore(); // Ignore newline character left in the buffer
+                    employerProfile.CompanyName = employerName;
+                    // Enter contact
+                    cout << "\n\n\t\t\t\t\tEnter Contact No: ";
+                    getline(cin, employerProfile.contact);
+                    // Enter email
+                    cout << "\t\t\t\t\tEnter email: ";
+                    getline(cin, employerProfile.email);
+                    // Enter dob
+                    cout << "\t\t\t\t\tEnter Location: ";
+                    getline(cin, employerProfile.location);
+
+                    // saveEmployerProfile Function Initiated
+                    saveEmployerProfile(employerProfile);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 2. Update Employer Profile
+                case 2:
+                {
+                    EmployerProfile newProfile;
+                    cin.ignore(); // Ignore newline character left in the buffer
+                    newProfile.CompanyName = employerName;
+                    // Enter contact
+                    cout << "\n\n\t\t\t\t\tEnter Contact No: ";
+                    getline(cin, newProfile.contact);
+                    // Enter email
+                    cout << "\t\t\t\t\tEnter email: ";
+                    getline(cin, newProfile.email);
+                    // Enter dob
+                    cout << "\t\t\t\t\tEnter Location: ";
+                    getline(cin, newProfile.location);
+
+                    // Update Employer function initiated
+                    updateEmployerProfile(employerName, newProfile);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 2. Show Employer Profile
+                case 3:
+                {
+                    showEmployerProfile(employerName);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 3. Add New Job
+                case 4:
+                {
+                    Job job;
+                    job.employerName = employerName;
+                    cout << "\n\t\t\t\t\tEnter job title: ";
+                    cin.ignore();
+                    getline(cin, job.title);
+                    cout << "\n\t\t\t\t\tEnter job description: ";
+                    getline(cin, job.description);
+                    cout << "\n\t\t\t\t\tEnter job requirements: ";
+                    getline(cin, job.requirements);
+                    addNewJob(job);
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 4. Show All Jobs Available
+                case 5:
+                {
+                    system("CLS");
+                    cout << endl
+                         << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << "\t\t\t\t\t    ::Available Jobs::" << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << endl
+                         << endl;
+                    showJobs(employerName);
+
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                    getch();
+                    break;
+                }
+
+                // 5. View Applied Jobs By the users
+                case 6:
+                {
+                    system("CLS");
+                    cout << endl
+                         << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << "\t\t\t\t\t     ::Applied Jobs::" << endl
+                         << "\t\t\t\t\t-------------------------------" << endl
+                         << endl
+                         << endl;
+                    viewAppliedJobs();
+                    cout << "\n\n\t\t\t\t\tPress Enter Key To Exit ";
+                    getch();
+                    break;
+                }
+
+                // 7. Remove Jobs
+                case 7:
+                {
+                    do
+                    {
+                        system("CLS");
+                        cout << endl
+                             << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << "\t\t\t\t\t    ::Available Jobs::" << endl
+                             << "\t\t\t\t\t-------------------------------" << endl
+                             << endl
+                             << endl;
+
+                        if (showJobs(employerName))
+                        {
+                            cin.ignore();
+                            cout << "\n\t\t\t\t\tEnter The Job Title You Want To Delete: ";
+                            getline(cin, jobTitle);
+                            removeJob(jobTitle);
+                            cout << "\n\n\t\t\t\t\tDo You Want To Delete More Jobs? (Y/y or N/n)"
+                                 << "\n\n\t\t\t\t\tEnter: ";
+                            cin >> c;
+                        }
+                        else
+                        {
+                            c = 'n';
+                            cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                            getch();
+                        }
+                    } while (c == 'Y' || c == 'y');
+                    break;
+                }
+
+                default:
+                {
+                    if (!choice == 0)
+                    {
+                        cout << "\n\t\t\t\t\tInvalid Input!! Please Try Again!!";
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                    }
+                    break;
+                }
+                }
+
+            } while (choice != 0);
+        }
+        else
+        {
+            cout << "\n\t\t\t\t\tDo you want to retry? (Y/y or N/n)" << endl
+                 << "\n\t\t\t\t\tEnter: ";
+            cin >> c;
+
+            if (c == 'y' || c == 'Y')
+            {
+                goto RenterName;
+            }
+        }
+    }
+};
+
 // login class
 class Login
 {
 private:
     Admin admin;
     JobSeeker jobseeker;
+    Employer employer;
     string user, pass;
     int choice;
 
@@ -1136,10 +1583,7 @@ private:
         // authenticate the employer
         if (user_login_input(reg_type))
         {
-            system("CLS");
-            cout << "\n\t\t\t\t\tContinue the Process" << endl;
-            cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
-            getch();
+            employer.employer_func_call();
         }
     }
 
