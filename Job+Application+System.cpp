@@ -1,25 +1,370 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
-#include <map>
 #include <vector>
 #include <conio.h>
+#include <ctime>
+#include <limits> // For numeric_limits
+#include <sstream>
+#include <iomanip>
+#include <algorithm> // For count
 
 using namespace std;
+
+class Credentials
+{
+    string username;
+    string password = "";
+    string name;
+
+public:
+    string getUsername() const
+    {
+        return username;
+    }
+
+    string getPassword() const
+    {
+        return password;
+    }
+
+    string getName() const
+    {
+        return name;
+    }
+
+    string lowerString(string s)
+    {
+        string l;
+        for (auto x : s)
+        {
+
+            l = l + (char)tolower(x);
+        }
+        return l;
+    }
+
+    void userInput(int i = 0)
+    {
+        char ch;
+        if (i != 0)
+        {
+            cout << "\t\t\t\t\tEnter Your Name: ";
+            cin.ignore();
+            getline(cin, name);
+            int count = 0;
+            for (int i = 0; i < name.length(); i++)
+                if (name[i] != ' ')
+                    name[count++] = name[i];
+            name[count] = '\0';
+        }
+
+        cout << "\t\t\t\t\tEnter username: ";
+        cin >> username;
+        username = lowerString(username);
+
+        cout << "\t\t\t\t\tEnter password: ";
+        ch = getch();
+        while (ch != 13)
+        { // character 13 is enter
+            password.push_back(ch);
+            cout << '*';
+            ch = getch();
+        }
+        password = lowerString(password);
+    }
+
+    void setName(string name)
+    {
+        this->name = name;
+    }
+};
+
+class Data
+{
+    struct ProfileData
+    {
+        string user_id;
+        string name;
+        string contact;
+        string email;
+        string dob;
+        string qualification;
+        string skills;
+        string experience;
+        string location;
+    };
+
+    struct ApplicationData
+    {
+        string jobId;
+        string user_id;
+    };
+
+    struct JobData
+    {
+        string jobid;
+        string companyId;
+        string companyName;
+        string jobTitle;
+        string description;
+        string requirements;
+        string salary;
+        string location;
+        string posted_date;
+    };
+
+    bool isValidDateFormat(const string &dateStr)
+    {
+        tm tm = {};
+        istringstream ss(dateStr);
+        ss >> get_time(&tm, "%d/%m/%Y");
+        return !ss.fail();
+    }
+
+    bool isValidEmail(const string &email)
+    {
+        // Check if there is exactly one '@' character and at least one '.' character
+        size_t atSymbolCount = count(email.begin(), email.end(), '@');
+        size_t dotCount = count(email.begin(), email.end(), '.');
+
+        return (atSymbolCount == 1) && (dotCount >= 1);
+    }
+
+public:
+    void setJobsekerData()
+    {
+        ProfileData resume;
+        Credentials cred;
+        cin.ignore(); // Ignore newline character left in the buffer
+        resume.user_id = cred.getUsername();
+        resume.name = cred.getName();
+        // Enter contact
+        setContact(resume);
+        // Enter email
+        setEmail(resume);
+        // Enter dob
+        setDOB(resume);
+        // Enter Qualification
+        setQualification(resume);
+        // Enter skills
+        setSkills(resume);
+        // Enter Experience
+        setExprience(resume);
+    }
+
+    void setEmployerData()
+    {
+        ProfileData empProfile;
+        Credentials cred;
+        cin.ignore(); // Ignore newline character left in the buffer
+        empProfile.user_id = cred.getUsername();
+        empProfile.name = cred.getName();
+        // Enter contact
+        setContact(empProfile);
+        // Enter email
+        setEmail(empProfile);
+        // Enter location
+        setLocation(empProfile);
+    }
+
+    void setJobData()
+    {
+        JobData jobData;
+        Credentials cred;
+        cin.ignore(); // Ignore newline character left in the buffer
+        jobData.companyId = cred.getUsername();
+        jobData.companyName = cred.getName();
+        // Enter job id
+        cout << "\n\n\t\t\t\t\tEnter Job ID: ";
+        getline(cin, jobData.jobid);
+        // Enter job title
+        cout << "\n\n\t\t\t\t\tEnter Job Title: ";
+        getline(cin, jobData.jobTitle);
+        // Enter description
+        cout << "\t\t\t\t\tEnter job descriptoin: ";
+        getline(cin, jobData.description);
+        // Enter requirents
+        cout << "\t\t\t\t\tEnter Location: ";
+        getline(cin, jobData.requirements);
+        // Enter salary
+        cout << "\t\t\t\t\tEnter Salary: ";
+        // Input validation loop
+        while (!(cin >> jobData.salary) || cin.peek() != '\n')
+        {
+            cin.clear();                                         // Clear error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+            cout << "\n\t\t\t\t\tInvalid input. \n\t\t\t\t\tPlease enter valid salary: ";
+        }
+        // Enter location
+        cout << "\t\t\t\t\tEnter Location: ";
+        getline(cin, jobData.location);
+
+        // set time of job posted
+        time_t t = time(0);
+        tm *now = localtime(&t);
+        int y = now->tm_year + 1900;
+        int m = 1 + now->tm_mon;
+        int d = now->tm_mday;
+        string date = to_string(d) + "/" + to_string(m) + "/" + to_string(y);
+        jobData.posted_date = date;
+    }
+
+    void setApplcationData(string jobID)
+    {
+        ApplicationData appData;
+        ProfileData profData;
+        appData.user_id = profData.user_id;
+        appData.jobId = jobID;
+    }
+
+    void setContact(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter Contact: ";
+        while (!(cin >> d.contact) || cin.peek() != '\n')
+        {
+            cin.clear();                                         // Clear error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
+            cout << "\n\t\t\t\t\tInvalid input. \n\t\t\t\t\tPlease enter a valid contact: ";
+        }
+    }
+
+    void setEmail(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter Email: ";
+        cin.ignore();
+        // Input validation loop
+        while (true)
+        {
+            getline(cin, d.email);
+
+            if (isValidEmail(d.email))
+            {
+                break; // Exit loop if the email is valid
+            }
+            else
+            {
+                cout << "\t\t\t\t\tInvalid email address. \n\t\t\t\t\tPlease enter a valid email: ";
+            }
+        }
+    }
+
+    void setDOB(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter D.O.B.(DD/MM/YYYY): ";
+        cin.ignore();
+        // Input validation loop
+        while (true)
+        {
+            getline(cin, d.dob);
+
+            if (isValidDateFormat(d.dob))
+            {
+                break; // Exit loop if the date is valid
+            }
+            else
+            {
+                cout << "\n\t\t\t\t\tInvalid date format. \n\t\t\t\t\tPlease enter a valid date in the format DD/MM/YYYY: ";
+            }
+        }
+    }
+
+    void setQualification(ProfileData d)
+    {
+        int c;
+        cout << "\n\t\t\t\t\tEnter Qualification: ";
+        cout << "\n\t\t\t\t\t1. MCA\n"
+             << "\n\t\t\t\t\t2. MBA\n"
+             << "\n\t\t\t\t\t3. M.Com.\n"
+             << "\n\t\t\t\t\t4. M.Sc.\n"
+             << "\n\t\t\t\t\t5. BCA\n"
+             << "\n\t\t\t\t\t6. BBA\n"
+             << "\n\t\t\t\t\t7. B.Com.\n"
+             << "\n\t\t\t\t\t8. B.Sc.\n"
+             << "\nEnter: ";
+        cin >> c;
+        switch (c)
+        {
+        case 1:
+            d.qualification = "MCA";
+            break;
+        case 2:
+            d.qualification = "MBA";
+            break;
+        case 3:
+            d.qualification = "M.Com.";
+            break;
+        case 4:
+            d.qualification = "M.Sc.";
+            break;
+        case 5:
+            d.qualification = "BCA";
+            break;
+        case 6:
+            d.qualification = "BBA";
+            break;
+        case 7:
+            d.qualification = "B.Com.";
+            break;
+        case 8:
+            d.qualification = "B.Sc.";
+            break;
+        default:
+            break;
+        }
+    }
+
+    void setSkills(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter Skills: ";
+        cin.ignore();
+        getline(cin, d.skills);
+    }
+
+    void setExprience(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter Experience: ";
+        cin.ignore();
+        getline(cin, d.experience);
+    }
+
+    void setLocation(ProfileData d)
+    {
+        cout << "\n\t\t\t\t\tEnter Location: ";
+        cin.ignore();
+        getline(cin, d.location);
+    }
+
+    ProfileData getProfile()
+    {
+        ProfileData profile;
+        return profile;
+    }
+
+    JobData getJobData()
+    {
+        JobData jobData;
+        return jobData;
+    }
+
+    ApplicationData getApplicationData()
+    {
+        ApplicationData appData;
+        return appData;
+    }
+};
 
 // registration class
 class Registration
 {
 private:
     int choice;
-    string user, pass;
 
     // register new user
-    bool registerUser(const string &username, const string &password, const int &reg_type)
+    bool registerUser(const Credentials cred, const int &reg_type)
     {
         string filepath;
-        map<string, string> users;
+        string user, user_name;
         switch (reg_type)
         {
         case 1:
@@ -30,10 +375,6 @@ private:
             filepath = "employers_credentials.txt";
             break;
 
-        case 3:
-            filepath = "admin_credentials.txt";
-            break;
-
         default:
             break;
         }
@@ -42,84 +383,59 @@ private:
         file.open(filepath);
 
         // checks if the file exists
+        // check if the exists or not
         if (file)
         {
-            // Read existing user credentials from file
-            ifstream userFile(filepath);
-            if (!userFile.is_open())
-            {
-                cerr << "\n\t\t\t\t\tError opening file." << endl
-                     << endl;
-                return false;
-            }
-
-            // Populate map with username-password pairs from the file
+            user = cred.getUsername() + "|" + cred.getPassword();
             string line;
-            while (getline(userFile, line))
+            while (getline(file, line))
             {
-                istringstream iss(line);
-                string storedUsername, storedPassword;
-                if (iss >> storedUsername >> storedPassword)
+                // Check if the provided username exists and the password matches
+                if (user == line)
                 {
-                    users[storedUsername] = storedPassword;
+                    cout << "\n\t\t\t\t\tUsernaame Already exists" << endl;
+                    file.close();
+                    return false;
                 }
-            }
-
-            // Check if the username already exists
-            if (users.find(username) != users.end())
-            {
-                cout << "\n\t\t\t\t\tUsername already exists." << endl
-                     << endl;
-                return false;
             }
         }
 
         // Register the new user mapping
-        users[username] = password;
+        user = cred.getUsername() + "|" + cred.getPassword() + "\n";
+        user_name = cred.getUsername() + "|" + cred.getName() + "\n";
 
-        ofstream outFile(filepath);
-        if (!outFile.is_open())
+        ofstream outFile(filepath, ios::app);
+        ofstream outNameFile("names.txt", ios::app);
+        if (outFile.is_open())
         {
-            cerr << "\n\t\t\t\t\tError opening user file for writing." << endl
-                 << endl;
-            return false;
+            outFile.write(user.c_str(), user.size());
+            outNameFile.write(user_name.c_str(), user.size());
+            cout << "\n\t\t\t\t\tProfile saved successfully!" << endl;
+            return true;
         }
 
-        for (const auto &entry : users)
-        {
-            outFile << entry.first << " " << entry.second << endl;
-        }
-
-        return true;
+        cerr << "\n\t\t\t\t\tError opening user file for writing." << endl
+             << endl;
+        return false;
     }
 
     // take input (username & password) from the user
     void user_registration_input(int reg_type)
     {
-        cout << "\t\t\t\t\tEnter username: ";
-        cin >> user;
+        Credentials cred;
+        cred.userInput(1);
 
-        cout << "\t\t\t\t\tEnter password: ";
-        cin >> pass;
-
-        if (registerUser(user, pass, reg_type))
+        if (registerUser(cred, reg_type))
         {
             char c;
             cout << "\n\t\t\t\t\tRegistration successful!" << endl
                  << endl;
             cout << "\t\t\t\t\tLogin To Continue." << endl
                  << endl;
-
-            cout << "\t\t\t\t\tDo you want to go to login screen? \n\t\t\t\t\t'Y/y' for yes 'N/n' for no"
-                 << "\n\n\t\t\t\t\tEnter: ";
-            cin >> c;
-            if (c == 'Y' || c == 'y')
-            {
-                // redirect to the login screen
-                cout << "\n\t\t\t\t\tHere You Can Login To the Application";
-                cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
-                getch();
-            }
+            // redirect to the login screen
+            cout << "\n\t\t\t\t\tNow You Can Login To the Application";
+            cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+            getch();
         }
         else
         {
@@ -168,7 +484,6 @@ public:
              << endl
              << "\t\t\t\t\t1. Job Seeker" << endl
              << "\t\t\t\t\t2. Employer" << endl
-             << "\t\t\t\t\t3. Admin" << endl
              << "\t\t\t\t\t0. Home Screen" << endl
              << endl
              << "\t\t\t\t\tEnter: ";
@@ -189,33 +504,16 @@ public:
             break;
         }
     }
-
 };
 
 class JobApplication
 {
 protected:
-    struct Profile
-    {
-        string user_id;
-        string name;
-        string contact;
-        string email;
-        string dob;
-        string qualification;
-        string skills;
-        string experience;
-        string location;
-    };
-
-    struct Application
-    {
-        string jobId;
-        string user_id;
-    };
+    Credentials cred;
+    Data data;
 
     // Add Profile of job seeker
-    bool add(const Profile &Profile, const string filename)
+    bool add(const string filename)
     {
         ifstream userFile;
         userFile.open(filename);
@@ -231,7 +529,7 @@ protected:
             {
                 size_t pos = userProfile.find("|");
                 string id = userProfile.substr(0, pos);
-                if (id == Profile.user_id)
+                if (id == data.getProfile().user_id)
                 {
                     cout << "\n\t\t\t\t\tProfile already exists." << endl
                          << endl;
@@ -243,13 +541,16 @@ protected:
         ofstream ProfileFile(filename, ios::app);
         if (ProfileFile.is_open())
         {
+            string prof;
             if (filename == "resumes.txt")
             {
-                ProfileFile << Profile.user_id << "|" << Profile.name << "|" << Profile.contact << "|" << Profile.email << "|" << Profile.dob << "|" << Profile.qualification << "|" << Profile.skills << "|" << Profile.experience << endl;
+                prof = data.getProfile().user_id + "|" + data.getProfile().name + "|" + data.getProfile().contact + "|" + data.getProfile().email + "|" + data.getProfile().dob + "|" + data.getProfile().qualification + "|" + data.getProfile().skills + "|" + data.getProfile().experience + "\n";
+                ProfileFile.write(prof.c_str(), prof.size());
             }
             else
             {
-                ProfileFile << Profile.user_id << "|" << Profile.name << "|" << Profile.contact << "|" << Profile.email << "|" << Profile.location << endl;
+                prof = data.getProfile().user_id + "|" + data.getProfile().name + "|" + data.getProfile().contact + "|" + data.getProfile().email + "|" + data.getProfile().location + "\n";
+                ProfileFile.write(prof.c_str(), prof.size());
             }
             cout << "\n\t\t\t\t\tProfile saved successfully!" << endl;
             return true;
@@ -262,7 +563,7 @@ protected:
     }
 
     // show the Profile of current job seeker
-    bool showProfile(const string user_id, const string filename)
+    bool showProfile(const string filename)
     {
         ifstream ProfileFile;
         ProfileFile.open(filename);
@@ -273,13 +574,32 @@ protected:
             {
                 size_t pos = line.find("|");
                 string id = line.substr(0, pos);
-                if (id == user_id)
+                if (id == data.getApplicationData().user_id)
                 {
-                    cout << "\n\n\t\t\t\t\tProfile for " << id << ": " << line.substr(pos + 1) << endl;
-                    return true;
+                    if (filename == "resumes.txt")
+                    {
+                        cout << "\n\n\t\t\t\t\tProfile for " << id << ": "
+                             << "\n\t\t\t\t\tName: " << data.getProfile().name
+                             << "\n\t\t\t\t\tContact: " << data.getProfile().contact
+                             << "\n\t\t\t\t\tEmail: " << data.getProfile().email
+                             << "\n\t\t\t\t\tDOB: " << data.getProfile().dob
+                             << "\n\t\t\t\t\tQualification: " << data.getProfile().qualification
+                             << "\n\t\t\t\t\tSkills: " << data.getProfile().skills
+                             << "\n\t\t\t\t\tExprience: " << data.getProfile().experience;
+                        return true;
+                    }
+                    else
+                    {
+                        cout << "\n\n\t\t\t\t\tProfile for " << id << ": "
+                             << "\n\t\t\t\t\tName: " << data.getProfile().name
+                             << "\n\t\t\t\t\tContact: " << data.getProfile().contact
+                             << "\n\t\t\t\t\tEmail: " << data.getProfile().email
+                             << "\n\t\t\t\t\tDOB: " << data.getProfile().location;
+                        return true;
+                    }
                 }
             }
-            cout << "\n\n\t\t\t\t\tProfile not found for " << user_id << "." << endl;
+            cout << "\n\n\t\t\t\t\tProfile not found for " << data.getApplicationData().user_id << "." << endl;
             return false;
         }
         cerr << "\n\n\t\t\t\t\tError opening Profile file for reading." << endl;
@@ -287,7 +607,7 @@ protected:
     }
 
     // update the Profile of the job seeker
-    void updateProfile(const string user_id, const Profile &newProfile, const string filename)
+    void updateProfile(const string filename)
     {
         ifstream ProfileFile(filename);
         if (ProfileFile.is_open())
@@ -298,15 +618,15 @@ protected:
             {
                 size_t pos = line.find("|");
                 string id = line.substr(0, pos);
-                if (id == user_id)
+                if (id == data.getProfile().user_id)
                 {
                     if (filename == "resumes.txt")
                     {
-                        lines.push_back(newProfile.user_id + "|" + newProfile.name + "|" + newProfile.contact + "|" + newProfile.email + "|" + newProfile.dob + "|" + newProfile.qualification + "|" + newProfile.skills + "|" + newProfile.experience);
+                        lines.push_back(data.getProfile().user_id + "|" + data.getProfile().name + "|" + data.getProfile().contact + "|" + data.getProfile().email + "|" + data.getProfile().dob + "|" + data.getProfile().qualification + "|" + data.getProfile().skills + "|" + data.getProfile().experience);
                     }
                     else
                     {
-                        lines.push_back(newProfile.user_id + "|" + newProfile.name + "|" + newProfile.contact + "|" + newProfile.email + "|" + newProfile.location);
+                        lines.push_back(data.getProfile().user_id + "|" + data.getProfile().name + "|" + data.getProfile().contact + "|" + data.getProfile().email + "|" + data.getProfile().location);
                     }
                 }
                 else
@@ -354,18 +674,6 @@ protected:
                     cout << "\n\n\t\t\t\t\tJob ID: " << jobId << endl;
                     cout << "\n\t\t\t\t\tJob Details: " << jobDetails << endl;
                 }
-                else if (userId.empty())
-                {
-                    pos = jobId.find("/");
-                    string jid = jobId.substr(0, pos);
-                    string compId = jobId.substr(pos + 1);
-                    string newJobId = applicantjobId + "/" + compId;
-                    if (jobId == newJobId)
-                    {
-                        cout << "\n\n\t\t\t\t\tJob ID: " << jobId << endl;
-                        cout << "\n\t\t\t\t\tJob Details: " << jobDetails << endl;
-                    }
-                }
                 else
                 {
                     pos = jobId.find("/");
@@ -386,7 +694,7 @@ protected:
     }
 
     // show all the applied jobs -> applications.txt
-    bool viewAppliedJobs(const string user_id, const string user_type)
+    bool viewAppliedJobs()
     {
         ifstream applicationFile("applications.txt");
         if (applicationFile.is_open())
@@ -396,18 +704,14 @@ protected:
             {
                 size_t pos = line.find("|");
                 string userId = line.substr(0, pos);
-                if (userId == user_id && user_type == "js")
+                if (userId == data.getApplicationData().user_id)
                 {
                     string jobId = line.substr(pos + 1);
                     showJobs("", jobId);
                 }
-                else if (userId == user_id && user_type == "em")
-                {
-                    showJobs(user_id, "");
-                }
                 else
                 {
-                    cout << "\n\t\t\t\t\tYou have not applied for any job.";
+                    cout << "\n\t\t\t\t\tNo jobs applied.";
                     return false;
                 }
             }
@@ -418,7 +722,7 @@ protected:
     }
 
     // Remove or take back any job application
-    bool removeJob(const string userId, const string jobId, const string filename)
+    bool removeJob(const string jobId, const string filename)
     {
         ifstream file;
         file.open(filename);
@@ -438,14 +742,14 @@ protected:
                 if (filename == "applications.txt")
                 {
                     string joId = line.substr(pos + 1);
-                    if (!(ID == userId && joId == jobId))
+                    if (!(ID == data.getApplicationData().user_id && joId == jobId))
                     {
                         lines.push_back(line);
                     }
                 }
                 else
                 {
-                    string newjobId = jobId + "/" + userId;
+                    string newjobId = jobId + "/" + data.getProfile().user_id;
                     if (!(newjobId == ID))
                     {
                         lines.push_back(line);
@@ -475,7 +779,7 @@ class JobSeeker : private JobApplication
 {
 private:
     // apply for any job -> applications.txt
-    bool applyForJob(const Application &application)
+    bool applyForJob()
     {
         // check if the job is already applied
         ifstream applicantfile;
@@ -493,7 +797,7 @@ private:
                 size_t pos = appliedJobs.find("|");
                 string userId = appliedJobs.substr(0, pos);
                 string jobId = appliedJobs.substr(pos + 1);
-                if (jobId == application.jobId && userId == application.user_id)
+                if (jobId == data.getApplicationData().jobId && userId == data.getApplicationData().user_id)
                 {
                     cout << "\n\t\t\t\t\tAlready Applied." << endl
                          << endl;
@@ -503,7 +807,7 @@ private:
         }
 
         // new application of a job
-        string applicationId = application.user_id + "|" + application.jobId;
+        string applicationId = data.getApplicationData().user_id + "|" + data.getApplicationData().jobId;
         ofstream applicationFile("applications.txt", ios::app);
         if (applicationFile.is_open())
         {
@@ -517,20 +821,14 @@ private:
 
 public:
     // Job seeker function call
-    void jobSeeker_func_call(const string username)
+    void jobSeeker_func_call(const Credentials cred)
     {
         int choice;
         char c;
         string jobId;
         size_t pos;
-        system("CLS");
-        cout << endl
-             << endl
-             << "\t\t\t\t\t--------------------------------------" << endl
-             << "\t\t\t\t\t  ::Welcome to Job Seeker Section!::" << endl
-             << "\t\t\t\t\t--------------------------------------" << endl
-             << endl
-             << endl;
+        data.getProfile().user_id = cred.getUsername();
+        data.getProfile().name = cred.getName();
         do
         {
             system("CLS");
@@ -556,32 +854,9 @@ public:
             // 1. Add Resume
             case 1:
             {
-                Profile resume;
-                cin.ignore(); // Ignore newline character left in the buffer
-                resume.user_id = username;
-                cout << "\n\n\t\t\t\t\tEnter Your Name: ";
-                getline(cin, resume.name);
-                // Enter contact
-                cout << "\t\t\t\t\tEnter Contact No: ";
-                getline(cin, resume.contact);
-                // Enter email
-                cout << "\t\t\t\t\tEnter email: ";
-                getline(cin, resume.email);
-                // Enter dob
-                cout << "\t\t\t\t\tEnter D.O.B.(DD/MM/YYYY): ";
-                getline(cin, resume.dob);
-                // Enter Qualification
-                cout << "\t\t\t\t\tEnter Qualification: ";
-                getline(cin, resume.qualification);
-                // Enter skills
-                cout << "\t\t\t\t\tEnter skills: ";
-                getline(cin, resume.skills);
-                // Enter Experience
-                cout << "\t\t\t\t\tEnter experience (months or years): ";
-                getline(cin, resume.experience);
-
+                data.setJobsekerData();
                 // addResume Function Initiated
-                add(resume, "resumes.txt");
+                add("resumes.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -590,7 +865,7 @@ public:
             // 2. Show Resume
             case 2:
             {
-                showProfile(username, "resumes.txt");
+                showProfile("resumes.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -599,32 +874,107 @@ public:
             // 3. Update Resume
             case 3:
             {
-                Profile newResume;
-                cin.ignore(); // Ignore newline character left in the buffer
-                newResume.user_id = username;
-                cout << "\n\n\t\t\t\t\tEnter Your Name: ";
-                getline(cin, newResume.name);
-                // Enter contact
-                cout << "\n\t\t\t\t\tEnter Contact No: ";
-                getline(cin, newResume.contact);
-                // Enter email
-                cout << "\t\t\t\t\tEnter email: ";
-                getline(cin, newResume.email);
-                // Enter dob
-                cout << "\t\t\t\t\tEnter D.O.B.(DD/MM/YYYY): ";
-                getline(cin, newResume.dob);
-                // Enter Qualification
-                cout << "\t\t\t\t\tEnter Qualification: ";
-                getline(cin, newResume.qualification);
-                // Enter skills
-                cout << "\t\t\t\t\tEnter skills: ";
-                getline(cin, newResume.skills);
-                // Enter Experience
-                cout << "\t\t\t\t\tEnter experience (months or years): ";
-                getline(cin, newResume.experience);
+                char ch;
+                do
+                {
+                    system("CLS");
+                    cout << endl
+                         << endl
+                         << "\t\t\t\t\t---------------------------------------" << endl
+                         << "\t\t\t\t\t ::Update Job Seeker Profile::" << endl
+                         << "\t\t\t\t\t---------------------------------------" << endl
+                         << endl;
+                    cout << "\n\t\t\t\t\t1. Update All\n"
+                         << "\n\t\t\t\t\t2. Update Contact No.\n"
+                         << "\n\t\t\t\t\t3. Update Email\n"
+                         << "\n\t\t\t\t\t4. Update D.O.B.(DD/MM/YYYY)\n"
+                         << "\n\t\t\t\t\t5. Update Qualification\n"
+                         << "\n\t\t\t\t\t6. Update Skills\n"
+                         << "\n\t\t\t\t\t7. Update experience (months)\n"
+                         << "\n\t\t\t\t\t0. Exit\n"
+                         << "\n\n\t\t\t\t\tEnter: ";
+                    cin >> ch;
+                    switch (choice)
+                    {
+                    // 1. Update All
+                    case 1:
+                    {
+                        data.setJobsekerData();
+                        // addResume Function Initiated
+                        add("resumes.txt");
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
 
+                    // 2. Update Contact
+                    case 2:
+                    {
+                        data.setContact(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 3. Update Email
+                    case 3:
+                    {
+                        data.setEmail(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 4. Update DOB
+                    case 4:
+                    {
+                        data.setDOB(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 5. Update Qualification
+                    case 5:
+                    {
+                        data.setQualification(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 6. Update Skills
+                    case 6:
+                    {
+                        data.setSkills(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 7. Update experience
+                    case 7:
+                    {
+                        data.setExprience(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    default:
+                    {
+                        if (!choice == 0)
+                        {
+                            cout << "\n\t\t\t\t\tInvalid Input!! Please Try Again!!";
+                            cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                            getch();
+                        }
+                        break;
+                    }
+                    }
+                } while (ch != 0);
                 // Update resume function initiated
-                updateProfile(username, newResume, "resumes.txt");
+                updateProfile("resumes.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -633,7 +983,6 @@ public:
             // 4. Search & Apply for Jobs Available
             case 4:
             {
-                Application application;
                 do
                 {
                     system("CLS");
@@ -653,13 +1002,12 @@ public:
                         if (c == 'Y' || c == 'y')
                         {
                             cin.ignore();
-                            application.user_id = username;
                             cout << "\n\t\t\t\t\tEnter the Job Id you want to apply for: ";
                             getline(cin, jobId);
                             pos = jobId.find("/");
                             jobId = jobId.substr(0, pos);
-                            application.jobId = jobId;
-                            applyForJob(application);
+                            data.setApplcationData(jobId);
+                            applyForJob();
                         }
                     }
                     else
@@ -686,7 +1034,7 @@ public:
                      << "\t\t\t\t\t-------------------------------" << endl
                      << endl
                      << endl;
-                viewAppliedJobs(username, "js");
+                viewAppliedJobs();
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Exit ";
                 getch();
                 break;
@@ -706,14 +1054,14 @@ public:
                          << endl
                          << endl;
 
-                    if (viewAppliedJobs(username, "js"))
+                    if (viewAppliedJobs())
                     {
                         cin.ignore();
                         cout << "\n\t\t\t\t\tEnter The Job ID You Want To Delete: ";
                         getline(cin, jobId);
                         pos = jobId.find("/");
                         jobId = jobId.substr(0, pos);
-                        removeJob(username, jobId, "applications.txt");
+                        removeJob(jobId, "applications.txt");
                         cout << "\n\n\t\t\t\t\tDo You Want More Applied Jobs Jobs? (Y/y or N/n)"
                              << "\n\n\t\t\t\t\tEnter: ";
                         cin >> c;
@@ -748,25 +1096,15 @@ public:
 class Employer : private JobApplication
 {
 private:
-    struct Job
-    {
-        string jobid;
-        string companyId;
-        string employerName;
-        string jobTitle;
-        string description;
-        string requirements;
-        string salary;
-        string location;
-    };
-
     // add new job -> jobs.txt
-    void addNewJob(const Job &job)
+    void addNewJob()
     {
+        string job;
         ofstream jobFile("jobs.txt", ios::app);
         if (jobFile.is_open())
         {
-            jobFile << job.jobid << "/" << job.companyId << "|" << job.jobTitle << "|" << job.description << "|" << job.requirements << "|" << job.location << "|" << job.salary << "|" << job.employerName << endl;
+            job = data.getJobData().jobid + "|" + data.getJobData().companyId + "|" + data.getJobData().jobTitle + "|" + data.getJobData().description + "|" + data.getJobData().requirements + "|" + data.getJobData().location + "|" + data.getJobData().salary + "|" + data.getJobData().companyName + "\n";
+            jobFile.write(job.c_str(), job.size());
             cout << "\n\n\t\t\t\t\tJob saved successfully!" << endl;
         }
         else
@@ -777,20 +1115,13 @@ private:
 
 public:
     // Employer function call
-    void employer_func_call(const string username)
+    void employer_func_call(const Credentials cred)
     {
         int choice;
         char c;
         string jobId;
-        system("CLS");
-        cout << endl
-             << endl
-             << "\t\t\t\t\t--------------------------------------" << endl
-             << "\t\t\t\t\t  ::Welcome to Employer Section!::" << endl
-             << "\t\t\t\t\t--------------------------------------" << endl
-             << endl
-             << endl;
-
+        data.getProfile().user_id = cred.getUsername();
+        data.getProfile().name = cred.getName();
         do
         {
             system("CLS");
@@ -806,8 +1137,7 @@ public:
                  << "\t\t\t\t\t3. Show Employer Profile\n"
                  << "\t\t\t\t\t4. Add New Job\n"
                  << "\t\t\t\t\t5. Show All Jobs and Vacancies\n"
-                 << "\t\t\t\t\t6. View Jobs Applied by Job Seekers\n"
-                 << "\t\t\t\t\t7. Remove Jobs\n"
+                 << "\t\t\t\t\t6. Remove Jobs\n"
                  << "\t\t\t\t\t0. Exit\n"
                  << "\n\t\t\t\t\tEnter your choice: ";
             cin >> choice;
@@ -817,24 +1147,10 @@ public:
             // 1. Add Employer Profile
             case 1:
             {
-                Profile employerProfile;
-                cin.ignore(); // Ignore newline character left in the buffer
-                employerProfile.user_id = username;
-                // Enter contact
-                cout << "\n\n\t\t\t\t\tEnter Employer Name: ";
-                getline(cin, employerProfile.name);
-                // Enter contact
-                cout << "\n\n\t\t\t\t\tEnter Contact No: ";
-                getline(cin, employerProfile.contact);
-                // Enter email
-                cout << "\t\t\t\t\tEnter email: ";
-                getline(cin, employerProfile.email);
-                // Enter dob
-                cout << "\t\t\t\t\tEnter Location: ";
-                getline(cin, employerProfile.location);
+                data.setEmployerData();
 
                 // saveEmployerProfile Function Initiated
-                add(employerProfile, "employers.txt");
+                add("employers.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -843,24 +1159,77 @@ public:
             // 2. Update Employer Profile
             case 2:
             {
-                Profile newProfile;
-                cin.ignore(); // Ignore newline character left in the buffer
-                newProfile.user_id = username;
-                // Enter contact
-                cout << "\n\n\t\t\t\t\tEnter Employer Name: ";
-                getline(cin, newProfile.name);
-                // Enter contact
-                cout << "\n\n\t\t\t\t\tEnter Contact No: ";
-                getline(cin, newProfile.contact);
-                // Enter email
-                cout << "\t\t\t\t\tEnter email: ";
-                getline(cin, newProfile.email);
-                // Enter dob
-                cout << "\t\t\t\t\tEnter Location: ";
-                getline(cin, newProfile.location);
+                char ch;
+                do
+                {
+                    system("CLS");
+                    cout << endl
+                         << endl
+                         << "\t\t\t\t\t---------------------------------------" << endl
+                         << "\t\t\t\t\t ::Update Job Seeker Profile::" << endl
+                         << "\t\t\t\t\t---------------------------------------" << endl
+                         << endl;
+                    cout << "\n\t\t\t\t\t1. Update All\n"
+                         << "\n\t\t\t\t\t2. Update Contact No.\n"
+                         << "\n\t\t\t\t\t3. Update Email\n"
+                         << "\n\t\t\t\t\t4. Update Location\n"
+                         << "\n\t\t\t\t\t0. Exit\n"
+                         << "\n\n\t\t\t\t\tEnter: ";
+                    cin >> ch;
+                    switch (choice)
+                    {
+                    // 1. Update All
+                    case 1:
+                    {
+                        data.setJobsekerData();
+                        // addResume Function Initiated
+                        add("resumes.txt");
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
 
-                // Update Employer function initiated
-                updateProfile(username, newProfile, "employers.txt");
+                    // 2. Update Contact
+                    case 2:
+                    {
+                        data.setContact(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 3. Update Email
+                    case 3:
+                    {
+                        data.setEmail(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    // 4. Update DOB
+                    case 4:
+                    {
+                        data.setLocation(data.getProfile());
+                        cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                        getch();
+                        break;
+                    }
+
+                    default:
+                    {
+                        if (!choice == 0)
+                        {
+                            cout << "\n\t\t\t\t\tInvalid Input!! Please Try Again!!";
+                            cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
+                            getch();
+                        }
+                        break;
+                    }
+                    }
+                } while (ch != 0);
+                // Update resume function initiated
+                updateProfile("resumes.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -869,7 +1238,7 @@ public:
             // 2. Show Employer Profile
             case 3:
             {
-                showProfile(username, "employers.txt");
+                showProfile("employers.txt");
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -878,24 +1247,8 @@ public:
             // 3. Add New Job
             case 4:
             {
-                Job job;
-                job.companyId = username;
-                cin.ignore();
-                cout << "\n\t\t\t\t\tEnter job ID: ";
-                getline(cin, job.jobid);
-                cout << "\n\t\t\t\t\tEnter job title: ";
-                getline(cin, job.jobTitle);
-                cout << "\n\t\t\t\t\tEnter Employer Name: ";
-                getline(cin, job.employerName);
-                cout << "\n\t\t\t\t\tEnter job description: ";
-                getline(cin, job.description);
-                cout << "\n\t\t\t\t\tEnter job requirements: ";
-                getline(cin, job.requirements);
-                cout << "\n\t\t\t\t\tEnter job salary: ";
-                getline(cin, job.salary);
-                cout << "\n\t\t\t\t\tEnter job location: ";
-                getline(cin, job.location);
-                addNewJob(job);
+                data.setJobData();
+                addNewJob();
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
@@ -912,32 +1265,15 @@ public:
                      << "\t\t\t\t\t-------------------------------" << endl
                      << endl
                      << endl;
-                showJobs(username);
+                showJobs(data.getProfile().user_id);
 
                 cout << "\n\n\t\t\t\t\tPress Enter Key To Continue ";
                 getch();
                 break;
             }
 
-            // 5. View Applied Jobs By the users
+            // 6. Remove Jobs
             case 6:
-            {
-                system("CLS");
-                cout << endl
-                     << endl
-                     << "\t\t\t\t\t-------------------------------" << endl
-                     << "\t\t\t\t\t     ::Applied Jobs::" << endl
-                     << "\t\t\t\t\t-------------------------------" << endl
-                     << endl
-                     << endl;
-                viewAppliedJobs(username, "em");
-                cout << "\n\n\t\t\t\t\tPress Enter Key To Exit ";
-                getch();
-                break;
-            }
-
-            // 7. Remove Jobs
-            case 7:
             {
                 do
                 {
@@ -950,14 +1286,14 @@ public:
                          << endl
                          << endl;
 
-                    if (showJobs(username))
+                    if (showJobs(data.getProfile().user_id))
                     {
                         cin.ignore();
                         cout << "\n\t\t\t\t\tEnter The Job ID You Want To Delete: ";
                         getline(cin, jobId);
                         size_t pos = jobId.find("/");
                         jobId = jobId.substr(0, pos);
-                        removeJob(username, jobId, "jobs.txt");
+                        removeJob(jobId, "jobs.txt");
                         cout << "\n\n\t\t\t\t\tDo You Want To Delete More Jobs? (Y/y or N/n)"
                              << "\n\n\t\t\t\t\tEnter: ";
                         cin >> c;
@@ -992,14 +1328,13 @@ public:
 class Login
 {
 private:
-    string user, pass;
     int choice;
+    Credentials cred;
 
     // authenticate a user
-    bool authenticateUser(const string &username, const string &password, const int &reg_type)
+    bool authenticateUser(const int &reg_type)
     {
-        string filepath;
-        map<string, string> users;
+        string filepath, user, name;
 
         // select file path
         switch (reg_type)
@@ -1010,10 +1345,6 @@ private:
 
         case 2:
             filepath = "employers_credentials.txt";
-            break;
-
-        case 3:
-            filepath = "admin_credentials.txt";
             break;
 
         default:
@@ -1027,31 +1358,43 @@ private:
         // check if the exists or not
         if (userFile)
         {
-            // Populate map with username-password pairs from the file
+            user = cred.getUsername() + "|" + cred.getPassword();
             string line;
             while (getline(userFile, line))
             {
-                istringstream iss(line);
-                string storedUsername, storedPassword;
-                if (iss >> storedUsername >> storedPassword)
+                // Check if the provided username exists and the password matches
+                if (user == line)
                 {
-                    users[storedUsername] = storedPassword;
+                    userFile.close();
+
+                    // check for name
+                    ifstream file;
+                    file.open("names.txt");
+
+                    // check if the exists or not
+                    if (file)
+                    {
+                        while (getline(file, line))
+                        {
+                            size_t pos = line.find("|");
+                            user = line.substr(0, pos);
+                            name = line.substr(pos + 1);
+                            if (user == cred.getUsername())
+                            {
+                                cred.setName(name);
+                                file.close();
+                                return true;
+                            }
+                        }
+                        file.close();
+                        cout << "\n\t\t\t\t\tInvalid username or password." << endl;
+                        return false;
+                    }
                 }
             }
-
-            // Check if the provided username exists and the password matches
-            auto it = users.find(username);
-            if (it != users.end() && it->second == password)
-            {
-                userFile.close();
-                return true;
-            }
-            else
-            {
-                userFile.close();
-                cout << "\n\t\t\t\t\tInvalid username or password." << endl;
-                return false;
-            }
+            userFile.close();
+            cout << "\n\t\t\t\t\tInvalid username or password." << endl;
+            return false;
         }
 
         cerr << "\n\t\t\t\t\tError opening file." << endl;
@@ -1061,16 +1404,13 @@ private:
     // take input (username & password) from the user
     bool user_login_input(int reg_type)
     {
+
         string user_type;
         char c;
 
-        cout << "\t\t\t\t\tEnter username: ";
-        cin >> user;
+        cred.userInput();
 
-        cout << "\t\t\t\t\tEnter password: ";
-        cin >> pass;
-
-        bool flag = authenticateUser(user, pass, reg_type);
+        bool flag = authenticateUser(reg_type);
 
         if (flag)
         {
@@ -1091,10 +1431,6 @@ private:
 
             case 2:
                 user_type = "Employer";
-                break;
-
-            case 3:
-                user_type = "Admin";
                 break;
 
             default:
@@ -1125,7 +1461,9 @@ private:
         // authenticate the job seeker
         if (user_login_input(reg_type))
         {
-            jobseeker.jobSeeker_func_call(user);
+            jobseeker.jobSeeker_func_call(cred);
+            cout << "Continue" << endl;
+            getch();
         }
     }
 
@@ -1144,27 +1482,8 @@ private:
         // authenticate the employer
         if (user_login_input(reg_type))
         {
-            employer.employer_func_call(user);
-        }
-    }
-
-    // login as an admin
-    void admin_login(int reg_type)
-    {
-        system("CLS");
-        cout << endl
-             << endl
-             << "\t\t\t\t\t---------------------------------------" << endl
-             << "\t\t\t\t\t\t::Login As An Admin::" << endl
-             << "\t\t\t\t\t---------------------------------------" << endl
-             << endl;
-
-        // authenticate the job seeker
-        if (user_login_input(reg_type))
-        {
-            system("CLS");
-            cout << "\n\t\t\t\t\tUnder Construction" << endl;
-            cout << "\n\t\t\t\t\tPress Enter Key To Continue ";
+            employer.employer_func_call(cred);
+            cout << "Continue" << endl;
             getch();
         }
     }
@@ -1182,8 +1501,8 @@ public:
              << endl
              << endl
              << "\t\t\t\t\t1. Job Seeker Login" << endl
-             << "\t\t\t\t\t2. Employee Login" << endl
-             << "\t\t\t\t\t3. Admin Login" << endl
+             << "\t\t\t\t\t2. Employer Login" << endl
+             << "\t\t\t\t\t0. Home Screen" << endl
              << endl
              << "\t\t\t\t\tEnter: ";
         cin >> choice;
@@ -1197,10 +1516,6 @@ public:
 
         case 2:
             employer_login(choice);
-            break;
-
-        case 3:
-            admin_login(choice);
             break;
 
         default:
