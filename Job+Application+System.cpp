@@ -21,6 +21,45 @@ private:
     int choice;
     string user, pass, name;
 
+    // Enumerator
+    enum IN
+    {
+        IN_BACK = 8,
+        IN_RET = 13
+    };
+
+    // Function that accepts the password
+    std::string takePasswdFromUser(
+        char sp = '*')
+    {
+        string passwd = "";
+        char ch_ipt;
+        while (true)
+        {
+
+            ch_ipt = getch();
+            if (ch_ipt == IN::IN_RET)
+            {
+                cout << endl;
+                return passwd;
+            }
+            else if (ch_ipt == IN::IN_BACK && passwd.length() != 0)
+            {
+                passwd.pop_back();
+                cout << "\b \b";
+
+                continue;
+            }
+            else if (ch_ipt == IN::IN_BACK && passwd.length() == 0)
+            {
+                continue;
+            }
+
+            passwd.push_back(ch_ipt);
+            cout << sp;
+        }
+    }
+
     // register new user
     bool registerUser(const int &reg_type)
     {
@@ -157,7 +196,7 @@ private:
         user = usernameTouserid(user);
 
         cout << "\t\t\t\t\tEnter password: ";
-        cin >> pass;
+        pass = takePasswdFromUser();
         pass = lowerString(pass);
 
         if (registerUser(reg_type))
@@ -353,55 +392,51 @@ protected:
         return userEmail;
     }
 
-    bool isDateValid(const string &dateStr, struct tm &date)
-    {
-        istringstream dateStream(dateStr);
-        dateStream >> get_time(&date, "%d/%m/%Y");
-        return !dateStream.fail();
+
+bool isDateValid(const string& dateStr, struct tm& date) {
+    istringstream dateStream(dateStr);
+    dateStream >> get_time(&date, "%d/%m/%Y");
+    return !dateStream.fail();
+}
+
+int calculateAge(const struct tm& birthDate) {
+    time_t currentTime = time(NULL);
+    struct tm* today = localtime(&currentTime);
+
+    int age = today->tm_year - birthDate.tm_year;
+    if (today->tm_mon < birthDate.tm_mon || 
+        (today->tm_mon == birthDate.tm_mon && today->tm_mday < birthDate.tm_mday)) {
+        age--;
     }
 
-    int calculateAge(const struct tm &birthDate)
-    {
-        time_t currentTime = time(NULL);
-        struct tm *today = localtime(&currentTime);
+    return age;
+}
 
-        int age = today->tm_year - birthDate.tm_year;
-        if (today->tm_mon < birthDate.tm_mon ||
-            (today->tm_mon == birthDate.tm_mon && today->tm_mday < birthDate.tm_mday))
-        {
-            age--;
+string getUserDateInput() {
+    string input;
+    struct tm birthDate = {};
+    int age;
+
+    do {
+        cout << "\n\t\t\t\t\tEnter your birth date (DD/MM/YYYY): ";
+        getline(cin, input);
+
+        if (!isDateValid(input, birthDate)) {
+            cout << "\n\t\t\t\t\tInvalid date format. Please try again.\n";
+            continue;
         }
-        return age;
-    }
 
-    string getUserDate()
-    {
-        string input;
-        struct tm birthDate = {};
-        int age;
+        age = calculateAge(birthDate);
 
-        do
-        {
-            cout << "\n\t\t\t\t\tEnter your birth date (DD/MM/YYYY): ";
-            getline(cin, input);
+        if (age <= 16) {
+            cout << "\n\t\t\t\t\tAge must be greater than 16. Please enter a valid birth date.\n";
+        }
 
-            if (!isDateValid(input, birthDate))
-            {
-                cout << "\n\t\t\t\t\tInvalid date. Please try again.\n";
-                continue;
-            }
+    } while (age <= 16);
 
-            age = calculateAge(birthDate);
+    return input;
+}
 
-            if (age <= 16)
-            {
-                cout << "\n\t\t\t\t\tAge must be greater than 16. Please enter a valid birth date.\n";
-            }
-
-        } while (age <= 16);
-
-        return input;
-    }
 
     // Add Profile of job seeker //done -> need validation
     bool addprofile(const string filename, int updateflag = 0)
@@ -450,9 +485,8 @@ protected:
                 newProfileData.contact = getUserContact();
                 cout << "\n\t\t\t\t\tEnter email: ";
                 newProfileData.email = getUserEmail();
-                // add check email
-                cout << "\n\t\t\t\t\tEnter DOB(DD/MM/YYYY): ";
-                newProfileData.dob = getUserDate();
+                cin.ignore();
+                newProfileData.dob = getUserDateInput();
                 cout << "\n\t\t\t\t\tEnter Job Qualification: \n";
                 int c;
                 cout << "\n\n\t\t\t\t\t1. MCA\n"
@@ -541,7 +575,8 @@ protected:
             else if (updateflag == 4)
             {
                 cout << "\n\t\t\t\t\tEnter DOB(DD/MM/YYYY): ";
-                newProfileData.dob = getUserDate();
+                cin.ignore();
+                newProfileData.dob = getUserDateInput();
                 // update dob
                 for (auto p : profile)
                 {
@@ -990,6 +1025,57 @@ protected:
         return false;
     }
 
+    // Show all the jobs available in the application -> jobs.txt // done
+    bool showAppliedJobs(string userId)
+    {
+        JobData itJob;
+        vector<JobData> jobs;
+
+        // read data from file -> jobs.txt
+        ifstream jobFile;
+        string filename = userId + "_applications.txt";
+        jobFile.open(filename);
+        if (jobFile)
+        {
+            string line;
+            while (getline(jobFile, line))
+            {
+                istringstream iss(line);
+                if (iss >> itJob.jobid >> itJob.companyId >> itJob.companyName >> itJob.jobTitle >> itJob.requirements >> itJob.salary >> itJob.location >> itJob.issued_date >> itJob.end_date >> itJob.min_qualification)
+                {
+                    jobs.push_back(itJob);
+                }
+            }
+
+            if (jobs.empty())
+            {
+                cout << "\n\t\t\t\t\tNo Jobs Available." << endl;
+                return false;
+            }
+
+            // Check if the job already exists
+            for (auto j : jobs)
+            {
+                    cout << "\n\t\t\t\t\t--------------------------------------------------------------------------\n";
+                    cout << "\n\t\t\t\t" << setw(30) << "Job Id: " << setw(40) << j.jobid
+                         << "\n\t\t\t\t" << setw(30) << "Company Id: " << setw(40) << j.companyId
+                         << "\n\t\t\t\t" << setw(30) << "Company Name: " << setw(40) << j.companyName
+                         << "\n\t\t\t\t" << setw(30) << "Job Title: " << setw(40) << j.jobTitle
+                         << "\n\t\t\t\t" << setw(30) << "Requirements: " << setw(40) << j.requirements
+                         << "\n\t\t\t\t" << setw(30) << "Minimum Qualification: " << setw(40) << j.min_qualification
+                         << "\n\t\t\t\t" << setw(30) << "Salary: " << setw(40) << j.salary
+                         << "\n\t\t\t\t" << setw(30) << "Location: " << setw(40) << j.location
+                         << "\n\t\t\t\t" << setw(30) << "Posted Date: " << setw(40) << j.issued_date
+                         << "\n\t\t\t\t" << setw(30) << "End Date: " << setw(40) << j.end_date
+                         << endl;
+                    cout << "\n\t\t\t\t\t--------------------------------------------------------------------------\n";
+            }
+            return true;
+        }
+        cerr << "\n\t\t\t\t\tError opening application file for writing." << endl;
+        return false;
+    }
+
     // update the Profile of the job seeker // done
     void updateProfile(const string filename)
     {
@@ -1336,6 +1422,7 @@ public:
                  << "\t\t\t\t\t2. Show Resume\n"
                  << "\t\t\t\t\t3. Update Resume\n"
                  << "\t\t\t\t\t4. Search & Apply Available Jobs\n"
+                 << "\t\t\t\t\t5. View Applied Jobs\n"
                  << "\t\t\t\t\t0. Exit\n"
                  << "\n\t\t\t\t\tEnter your choice: ";
             cin >> choice;
@@ -1400,6 +1487,21 @@ public:
 
                 } while (c == 'Y' || c == 'y');
 
+                break;
+
+            case 5:
+                system("CLS");
+                cout << endl
+                     << endl
+                     << "\t\t\t\t\t-------------------------------" << endl
+                     << "\t\t\t\t\t    ::Applied Jobs::" << endl
+                     << "\t\t\t\t\t-------------------------------" << endl
+                     << endl
+                     << endl;
+                showAppliedJobs(profileData.user_id);
+
+                cout << "\n\n\t\t\t\t\tPress Enter Key To Exit ";
+                getch();
                 break;
 
             default:
@@ -1474,7 +1576,7 @@ private:
         newJob.location = removeSpaces(newJob.location);
         // set time of job posted
         newJob.issued_date = getCurrentDate();
-        newJob.vacancy = "2";
+        newJob.vacancy = "1";
         cout << "\n\t\t\t\t\tEnter Minimum Job Qualification: \n";
         int c;
         cout << "\n\n\t\t\t\t\t1. MCA\n"
